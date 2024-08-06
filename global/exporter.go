@@ -6,6 +6,7 @@ type ExporterData struct {
 	Packets   float64
 	Bytes     float64
 	Hostname  string
+	Direction string
 }
 
 var (

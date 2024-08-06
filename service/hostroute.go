@@ -11,7 +11,6 @@ import (
 type HostRouter struct {
 	DefaultLinkIdex int
 	GatewayAddr     string
-	ServerSv        *ServerService
 }
 
 func NewHostRouter() *HostRouter {
@@ -32,7 +31,6 @@ func NewHostRouter() *HostRouter {
 	}
 	return &HostRouter{
 		DefaultLinkIdex: defaultLinkIndex,
-		ServerSv:        &ServerService{},
 	}
 
 }
@@ -44,7 +42,7 @@ func (hr *HostRouter) AddCustomRoute(destination string, cidr int) error {
 	if gwIP == nil || destIP == nil {
 		return fmt.Errorf("invalid IP address")
 	}
-	isLocal, err := hr.ServerSv.isPrivateIP(destination)
+	isLocal, err := isPrivateIP(destination)
 	if err != nil {
 		return fmt.Errorf("校验目标 IP 是否是内网 IP 失败: %s", err.Error())
 	}
@@ -75,7 +73,7 @@ func (hr *HostRouter) AddCustomRoute(destination string, cidr int) error {
 
 // DeleteCustomRoute 删除自定义路由
 func (hr *HostRouter) DeleteCustomRoute(destination string, cidr int) error {
-	isLocal, err := hr.ServerSv.isPrivateIP(destination)
+	isLocal, err := isPrivateIP(destination)
 	if err != nil {
 		return fmt.Errorf("校验目标 IP 是否是内网 IP 失败: %s", err.Error())
 	}

@@ -37,6 +37,9 @@ func (cc *Client) RecvierServerMessage() {
 	defer client.Close()
 	flag.StringVar(&client.WssServerAddr, "iptables-wss-server", "", "设置server地址")
 	flag.Parse()
+	if client.WssServerAddr == "" {
+		Logger.Panic("wss server 地址为空,使用 -iptables-wss-server指定")
+	}
 	client.Connect()
 	client.StartReceiver()
 	client.StartSender()

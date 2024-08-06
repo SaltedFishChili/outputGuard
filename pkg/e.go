@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"outputGuard/global"
 	. "outputGuard/logger"
-	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -28,13 +27,13 @@ func NewNodeCollector() prometheus.Collector {
 				packetsDesc: prometheus.NewDesc(
 					"iptables_packets_count",
 					"Iptables packets count",
-					[]string{"hostname", "chain", "ip", "type"},
+					[]string{"hostname", "chain", "ip", "type", "direction"},
 					nil,
 				),
 				bytesDesc: prometheus.NewDesc(
 					"iptables_bytes_count",
 					"Iptables bytes count",
-					[]string{"hostname", "chain", "ip", "type"},
+					[]string{"hostname", "chain", "ip", "type", "direction"},
 					nil,
 				),
 				valType: prometheus.GaugeValue,
@@ -49,7 +48,6 @@ func (n *NodeCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (n *NodeCollector) Collect(ch chan<- prometheus.Metric) {
-	sa := time.Now()
 	for ge := range global.ExporterDatas {
 		if ge.ChainName == "done" {
 			break
@@ -61,6 +59,7 @@ func (n *NodeCollector) Collect(ch chan<- prometheus.Metric) {
 			ge.Hostname,
 			ge.ChainName,
 			ge.Ip,
+			ge.Direction,
 			"packets_count",
 		)
 		ch <- prometheus.MustNewConstMetric(
@@ -70,14 +69,12 @@ func (n *NodeCollector) Collect(ch chan<- prometheus.Metric) {
 			ge.Hostname,
 			ge.ChainName,
 			ge.Ip,
+			ge.Direction,
 			"bytes_count",
 		)
 
 	}
 	global.RunSig <- struct{}{}
-
-	ss := time.Since(sa)
-	Logger.Info(fmt.Sprintf("exporter耗时:%v", ss))
 }
 
 func RunExporter() {

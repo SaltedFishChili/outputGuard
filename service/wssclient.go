@@ -27,9 +27,6 @@ func NewWebSocketClient() *WebSocketClient {
 
 func (wc *WebSocketClient) Connect() error {
 	hostname, _ := os.Hostname()
-	if wc.WssServerAddr == "" {
-		Logger.Panic("wss server 地址为空")
-	}
 	u := url.URL{Scheme: "ws", Host: wc.WssServerAddr, Path: "/ws", RawQuery: "hostname=" + hostname}
 	Logger.Info(fmt.Sprintf("开始连接wss server %s\n", u.String()))
 

@@ -1,12 +1,15 @@
 package orm
 
 import (
+	"flag"
 	"fmt"
-	"runtime"
+	"io"
+	"os"
 	"time"
 
 	. "outputGuard/logger"
 
+	"gopkg.in/yaml.v2"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -22,18 +25,56 @@ type CrawlerProxy struct {
 	CreatedAt  time.Time `gorm:"column:created_at"`
 }
 
-var Ormer *ORM = NewORM()
+// var Ormer *ORM = NewORM()
 
 type ORM struct {
 	db *gorm.DB
 }
 
-func NewORM() *ORM {
-	rootDSN := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", "cmdb", "cmdb", "oss-cmdb-mariadb-master.op.svc.infra.local", "3306", "cmdb")
-	switch runtime.GOOS {
-	case "darwin":
-		rootDSN = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", "root", "lagou_lagou_LAGOU_!@#$1-1", "10.240.32.201", "3306", "cmdb")
+type config struct {
+	DbUser     string `yaml:"db_user"`
+	DbPassword string `yaml:"db_password"`
+	DbServer   string `yaml:"db_server"`
+	DbPort     string `yaml:"db_port"`
+	DbName     string `yaml:"db_name"`
+}
+
+func LoadConfig() (*config, error) {
+	var configPath string
+	flag.StringVar(&configPath, "server-conf-path", "", "设置server配置文件路径")
+	flag.Parse()
+
+	if configPath == "" {
+		return nil, fmt.Errorf("配置文件路径不能为空")
 	}
+	file, err := os.Open(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("无法打开配置文件: %v", err)
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		return nil, fmt.Errorf("无法读取配置文件: %v", err)
+	}
+
+	var config config
+	err = yaml.Unmarshal(data, &config)
+	if err != nil {
+		return nil, fmt.Errorf("无法解析配置文件: %v", err)
+	}
+
+	return &config, nil
+}
+
+func NewORM() *ORM {
+	config, err := LoadConfig()
+	if err != nil {
+		Logger.Panic(fmt.Sprintf("加载server配置文件失败:%s", err.Error()))
+		return nil
+	}
+	Logger.Info(fmt.Sprintf("加载server配置文件成功: %v", config))
+	rootDSN := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", config.DbUser, config.DbPassword, config.DbServer, config.DbPort, config.DbName)
 	// 创建 Gorm 的 DB 对象
 	rootDB, err := gorm.Open(mysql.New(mysql.Config{
 		DSN: rootDSN,

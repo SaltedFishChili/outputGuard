@@ -1,0 +1,5 @@
+db_user: "root"
+db_password: "lagou_lagou_LAGOU_!@#$1-1"
+db_server: "10.240.32.201"
+db_port: "3306"
+db_name: "cmdb"

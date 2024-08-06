@@ -20,6 +20,7 @@ type Client struct {
 }
 
 type WssServer struct {
+	Orms       *orm.ORM
 	clients    map[*Client]bool
 	register   chan *Client
 	unregister chan *Client
@@ -102,7 +103,7 @@ func (s *WssServer) broadcastMessage(message []byte) {
 }
 
 func (s *WssServer) sendMessageToFirstRegisterClient(client *Client) {
-	ips, err := orm.Ormer.QueryAll()
+	ips, err := s.Orms.QueryAll()
 	if err != nil {
 		Logger.Error(fmt.Sprintf("查询IP失败: %s", err.Error()))
 	}

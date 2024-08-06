@@ -2,7 +2,6 @@ package service
 
 import (
 	"outputGuard/global"
-	. "outputGuard/logger"
 
 	"fmt"
 	"os"
@@ -168,17 +167,19 @@ func (ir IptableRules) parseRule(rule string) (global.ExporterData, error) {
 	parts := strings.Fields(rule)
 
 	if len(parts) < 8 {
-		Logger.Info(fmt.Sprintf("规则%s格式不正确", rule))
 		return ge, nil
 	}
 	var chainType string
 	direction := parts[2]
 	chainIp := parts[3]
+	t := ""
 	switch {
 	case direction == "-d":
 		chainType = "POSTROUTING"
+		t = "OUTPUT"
 	case direction == "-s":
 		chainType = "FORWARD"
+		t = "INPUT"
 	}
 
 	chainPacketsFloat, ok := toFloat64(parts[5])
@@ -195,8 +196,8 @@ func (ir IptableRules) parseRule(rule string) (global.ExporterData, error) {
 	ge.Bytes = chainBytesFloat
 	ge.Packets = chainPacketsFloat
 	ge.Ip = chainIp
+	ge.Direction = t
 	ge.Hostname, _ = os.Hostname()
-
 	return ge, nil
 }
 

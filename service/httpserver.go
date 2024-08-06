@@ -12,7 +12,6 @@ import (
 
 	"outputGuard/global"
 	. "outputGuard/logger"
-	"outputGuard/model/orm"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -20,6 +19,7 @@ import (
 
 type HttpServer struct {
 	WssServer *WssServer
+	Ss        *ServerService
 }
 
 type LdapConfig struct {
@@ -57,21 +57,13 @@ func (hs *HttpServer) handleWebSocket(ctx *gin.Context) {
 }
 
 func (hs *HttpServer) Apis(ctx *gin.Context) {
-	var ss ServerService
-	i, err := ss.isPrivateIP(ctx.ClientIP())
-	if err != nil || !i {
-		ctx.JSON(http.StatusForbidden, gin.H{
-			"info":   fmt.Sprintf("你的IP:%s不允许访问", ctx.ClientIP()),
-			"status": "failed",
-		})
-	}
 
 	add := ctx.Query("add")
 	del := ctx.Query("del")
 
 	var messageStruct global.Messages
 	if add != "" {
-		result, err := ss.ServerAction(add)
+		result, err := hs.Ss.ServerAction(add)
 		if err != nil {
 			Logger.Error(fmt.Sprintf("add:解析%s失败:%s", add, err.Error()))
 			ctx.JSON(http.StatusBadRequest, gin.H{
@@ -101,7 +93,7 @@ func (hs *HttpServer) Apis(ctx *gin.Context) {
 					<-addSem
 					addWg.Done()
 				}()
-				isLocal, err := ss.isPrivateIP(ip)
+				isLocal, err := isPrivateIP(ip)
 				if err != nil {
 					Logger.Error(fmt.Sprintf("isPrivateIP:解析%s失败:%s", ip, err.Error()))
 				}
@@ -110,7 +102,7 @@ func (hs *HttpServer) Apis(ctx *gin.Context) {
 					if isLocal { // 内网ip强制设置为不可删除
 						isNoDel = isLocal
 					}
-					if err := orm.Ormer.Add(types, ip, Name, time.Now().Local(), isNoDel, isLocal); err != nil {
+					if err := hs.Ss.Orms.Add(types, ip, Name, time.Now().Local(), isNoDel, isLocal); err != nil {
 						Logger.Error(fmt.Sprintf("添加%s 失败: %s", result.Name, err.Error()))
 					}
 				}(ip, result.Type, result.Name, isNoDel, isLocal)
@@ -139,7 +131,7 @@ func (hs *HttpServer) Apis(ctx *gin.Context) {
 		})
 	}
 	if del != "" {
-		result, err := ss.ServerAction(del)
+		result, err := hs.Ss.ServerAction(del)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"info":   err.Error(),
@@ -150,7 +142,7 @@ func (hs *HttpServer) Apis(ctx *gin.Context) {
 		delSem := make(chan struct{}, len(result.IP))
 		delWg := sync.WaitGroup{}
 		for _, ip := range result.IP {
-			noDel, err := orm.Ormer.QueryNoDel(ip)
+			noDel, err := hs.Ss.Orms.QueryNoDel(ip)
 			if err != nil {
 				Logger.Error(fmt.Sprintf("查询%s 是否可删除失败: %s", result.Name, err.Error()))
 			}
@@ -171,11 +163,11 @@ func (hs *HttpServer) Apis(ctx *gin.Context) {
 				}()
 
 				go func(ip string) {
-					if err := orm.Ormer.Del(ip); err != nil {
+					if err := hs.Ss.Orms.Del(ip); err != nil {
 						Logger.Error(fmt.Sprintf("删除%s 失败: %s", result.Name, err.Error()))
 					}
 				}(ip)
-				isLocal, err := ss.isPrivateIP(ip)
+				isLocal, err := isPrivateIP(ip)
 				if err != nil {
 					Logger.Error(fmt.Sprintf("isPrivateIP:解析%s失败:%s", ip, err.Error()))
 				}
@@ -205,7 +197,7 @@ func (hs *HttpServer) Apis(ctx *gin.Context) {
 }
 
 func (hs *HttpServer) ShowAll(c *gin.Context) {
-	allRecords, err := orm.Ormer.QueryAll()
+	allRecords, err := hs.Ss.Orms.QueryAll()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to fetch records from the database",

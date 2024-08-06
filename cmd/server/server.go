@@ -6,5 +6,6 @@ import (
 
 func main() {
 	server := control.NewControlServer()
+
 	server.RunServer()
 }

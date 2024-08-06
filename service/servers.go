@@ -20,6 +20,7 @@ type ServerService struct {
 	IsDoamin     bool
 	DNSResolvers DNSResolver
 	DNSAddr      string
+	Orms         *orm.ORM
 }
 
 type DNSResolver struct {
@@ -71,7 +72,7 @@ func (ss *ServerService) GetIPv4Addresses(input string) (ServerService, error) {
 
 /*
  * 优先使用指定的DNS
- * 其次使用系统的resolv.conf
+ * 其次使用系统的resolv
  */
 func (ss *ServerService) BuildDNSResolver() {
 	var resolver *net.Resolver
@@ -129,10 +130,9 @@ func (ss *ServerService) getIPv4AddressesForDomain(domain string) ([]string, err
  * 如果存在新的A记录则自动添加白名单
  */
 func (ss *ServerService) LookupDomainIP(wssServer *WssServer) {
-
 	for {
 		time.Sleep(10 * time.Minute)
-		domian, err := orm.Ormer.QueryUniqueDomainNames()
+		domian, err := ss.Orms.QueryUniqueDomainNames()
 		Logger.Info(fmt.Sprintf("查询到的域名为:%s", domian))
 		if err != nil {
 			Logger.Error(fmt.Sprintf("查询域名失败: %s", err.Error()))
@@ -156,7 +156,7 @@ func (ss *ServerService) LookupDomainIP(wssServer *WssServer) {
 				}
 				for _, ip := range result.IP {
 
-					isExits, err := orm.Ormer.Query(ip)
+					isExits, err := ss.Orms.Query(ip)
 					if err != nil {
 						Logger.Error(fmt.Sprintf("查询IP %s 是否存在失败!: %s", ip, err.Error()))
 						continue
@@ -165,7 +165,7 @@ func (ss *ServerService) LookupDomainIP(wssServer *WssServer) {
 						Logger.Info(fmt.Sprintf("域名:%s解析到的ip:%s已存在,不再重复添加", domain, ip))
 						continue
 					}
-					isLocal, err := ss.isPrivateIP(ip)
+					isLocal, err := isPrivateIP(ip)
 					if err != nil {
 						Logger.Error(fmt.Sprintf("isPrivateIP:解析%s失败:%s", ip, err.Error()))
 					}
@@ -180,7 +180,7 @@ func (ss *ServerService) LookupDomainIP(wssServer *WssServer) {
 					}
 					wssServer.broadcast <- []byte(messageJson)
 					go func(ip, Type, Name string, isLocal bool) {
-						if err := orm.Ormer.Add(Type, ip, Name, time.Now().Local(), isLocal, isLocal); err != nil {
+						if err := ss.Orms.Add(Type, ip, Name, time.Now().Local(), isLocal, isLocal); err != nil {
 							Logger.Error(fmt.Sprintf("添加IP %s 失败: %s", ip, err.Error()))
 						}
 					}(ip, result.Type, result.Name, isLocal)
@@ -194,7 +194,7 @@ func (ss *ServerService) LookupDomainIP(wssServer *WssServer) {
 	}
 }
 
-func (ss *ServerService) isPrivateIP(ipAddr string) (bool, error) {
+func isPrivateIP(ipAddr string) (bool, error) {
 	if strings.Contains(ipAddr, "/") {
 		ipAddr = strings.Split(ipAddr, "/")[0]
 	}

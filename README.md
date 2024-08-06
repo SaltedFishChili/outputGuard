@@ -104,9 +104,9 @@
 #### ip INPUT报文数
 - sum by (ip) (increase(iptables_packets_count{type=~"INPUT",hostname=~"$host"}[2m]))
 #### ip 产生的OUTPUT流量
-sum by (ip) (increase(iptables_bytes_count{type=~"OUTPUT",hostname=~"$host"}[2m]))
+- sum by (ip) (increase(iptables_bytes_count{type=~"OUTPUT",hostname=~"$host"}[2m]))
 #### ip 产生的INPUT流量
-sum by (ip) (increase(iptables_bytes_count{type=~"INPUT",hostname=~"$host"}[2m]))
+- sum by (ip) (increase(iptables_bytes_count{type=~"INPUT",hostname=~"$host"}[2m]))
 
 ## 运行方式
  - 进入cmd目录，自行build三个组件即可

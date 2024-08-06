@@ -102,7 +102,7 @@ func (hs *HttpServer) Apis(ctx *gin.Context) {
 					if isLocal { // 内网ip强制设置为不可删除
 						isNoDel = isLocal
 					}
-					if err := hs.Ss.Orms.Add(types, ip, Name, time.Now().Local(), isNoDel, isLocal); err != nil {
+					if err := hs.WssServer.Orms.Add(types, ip, Name, time.Now().Local(), isNoDel, isLocal); err != nil {
 						Logger.Error(fmt.Sprintf("添加%s 失败: %s", result.Name, err.Error()))
 					}
 				}(ip, result.Type, result.Name, isNoDel, isLocal)
@@ -142,7 +142,7 @@ func (hs *HttpServer) Apis(ctx *gin.Context) {
 		delSem := make(chan struct{}, len(result.IP))
 		delWg := sync.WaitGroup{}
 		for _, ip := range result.IP {
-			noDel, err := hs.Ss.Orms.QueryNoDel(ip)
+			noDel, err := hs.WssServer.Orms.QueryNoDel(ip)
 			if err != nil {
 				Logger.Error(fmt.Sprintf("查询%s 是否可删除失败: %s", result.Name, err.Error()))
 			}
@@ -163,7 +163,7 @@ func (hs *HttpServer) Apis(ctx *gin.Context) {
 				}()
 
 				go func(ip string) {
-					if err := hs.Ss.Orms.Del(ip); err != nil {
+					if err := hs.WssServer.Orms.Del(ip); err != nil {
 						Logger.Error(fmt.Sprintf("删除%s 失败: %s", result.Name, err.Error()))
 					}
 				}(ip)
@@ -197,7 +197,7 @@ func (hs *HttpServer) Apis(ctx *gin.Context) {
 }
 
 func (hs *HttpServer) ShowAll(c *gin.Context) {
-	allRecords, err := hs.Ss.Orms.QueryAll()
+	allRecords, err := hs.WssServer.Orms.QueryAll()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to fetch records from the database",

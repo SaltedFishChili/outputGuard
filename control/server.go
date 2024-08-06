@@ -19,9 +19,7 @@ func (cs *Server) RunServer() {
 		WssServer: wssServer,
 		Ss:        &service.ServerService{},
 	}
-	orm := orm.NewORM()
-	httpServer.Ss.Orms = orm
-	httpServer.WssServer.Orms = orm
+	httpServer.WssServer.Orms = orm.NewORM()
 	//解析已添加的域名
 	//当发现新的A记录时自动添加白名单
 	go cs.ss.LookupDomainIP(wssServer)

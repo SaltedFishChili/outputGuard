@@ -93,9 +93,10 @@ func NewORM() *ORM {
 		return nil
 	}
 
-	sqlDB.SetMaxIdleConns(100)               // 设置最大空闲连接数
-	sqlDB.SetMaxOpenConns(100)               // 设置最大打开连接数
-	sqlDB.SetConnMaxLifetime(time.Hour * 24) // 设置连接的最大存活时间
+	sqlDB.SetMaxIdleConns(1000)                // 设置最大空闲连接数
+	sqlDB.SetMaxOpenConns(1000)                // 设置最大打开连接数
+	sqlDB.SetConnMaxLifetime(time.Second * 10) // 设置连接的最大存活时间
+	sqlDB.SetConnMaxIdleTime(time.Second * 10) // 设置连接的最大空闲时间
 
 	migrator := rootDB.Migrator()
 	if !migrator.HasTable(&CrawlerProxy{}) {

@@ -7,7 +7,6 @@ import (
 	"net"
 	"outputGuard/global"
 	. "outputGuard/logger"
-	"outputGuard/model/orm"
 	"strings"
 	"sync"
 	"time"
@@ -20,7 +19,7 @@ type ServerService struct {
 	IsDoamin     bool
 	DNSResolvers DNSResolver
 	DNSAddr      string
-	Orms         *orm.ORM
+	// Orms         *orm.ORM
 }
 
 type DNSResolver struct {
@@ -131,8 +130,8 @@ func (ss *ServerService) getIPv4AddressesForDomain(domain string) ([]string, err
  */
 func (ss *ServerService) LookupDomainIP(wssServer *WssServer) {
 	for {
-		time.Sleep(10 * time.Minute)
-		domian, err := ss.Orms.QueryUniqueDomainNames()
+		time.Sleep(1 * time.Minute)
+		domian, err := wssServer.Orms.QueryUniqueDomainNames()
 		Logger.Info(fmt.Sprintf("查询到的域名为:%s", domian))
 		if err != nil {
 			Logger.Error(fmt.Sprintf("查询域名失败: %s", err.Error()))
@@ -156,7 +155,7 @@ func (ss *ServerService) LookupDomainIP(wssServer *WssServer) {
 				}
 				for _, ip := range result.IP {
 
-					isExits, err := ss.Orms.Query(ip)
+					isExits, err := wssServer.Orms.Query(ip)
 					if err != nil {
 						Logger.Error(fmt.Sprintf("查询IP %s 是否存在失败!: %s", ip, err.Error()))
 						continue
@@ -180,7 +179,7 @@ func (ss *ServerService) LookupDomainIP(wssServer *WssServer) {
 					}
 					wssServer.broadcast <- []byte(messageJson)
 					go func(ip, Type, Name string, isLocal bool) {
-						if err := ss.Orms.Add(Type, ip, Name, time.Now().Local(), isLocal, isLocal); err != nil {
+						if err := wssServer.Orms.Add(Type, ip, Name, time.Now().Local(), isLocal, isLocal); err != nil {
 							Logger.Error(fmt.Sprintf("添加IP %s 失败: %s", ip, err.Error()))
 						}
 					}(ip, result.Type, result.Name, isLocal)

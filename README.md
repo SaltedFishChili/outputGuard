@@ -38,38 +38,20 @@
  - route
    - 将所有公网ip网段的路由指向gateway
 
-## 系统架构图
 
-## 系统架构图
+## 数据流
 
-```mermaid
-graph LR
-    subgraph "Server"
-        S1[Web Interface]
-        S2[API Interface]
-        S3[WSS Interface]
-        S4[Domain Resolver]
-    end
-
-    subgraph "Gateway"
-        G1[IPTables Manager]
-        G2[Prometheus Exporter]
-    end
-
-    subgraph "Route"
-        R1[Route Manager]
-    end
-
-    S1 --> S2
-    S2 --> S3
-    S2 --> S4
-
-    S3 --> G1
-    S4 --> G1
-
-    G1 --> G2
-
-    R1 --> G1
+	1.	用户通过Web Interface或API Interface与Server交互。
+        •	用户 → 🖥️ Web Interface
+        •	用户 → 🔗 API Interface
+	2.	Server通过WSS Interface将任务发布给Gateway。
+        •	🖥️ Web Interface → 🌐 WSS Interface
+        •	🔗 API Interface → 🌐 WSS Interface
+	3.	Gateway通过IPTables r执行任务，并将流量统计数据通过Prometheus Exporter暴露。
+        •	🌐 WSS  → 🚦 IPTables
+        •	🚦 IPTables → 📊 Prometheus Exporter
+	4.	需要访问外网的机器通过Route 将外部流量路由到Gateway进行管理。
+        •	🛤️ Route → 🚦 IPTables
 
 
 
@@ -81,6 +63,15 @@ graph LR
 | `-iptables-wss-server`| server 端的地址，用以从 server 端接收添加/删除任务 | gateway     | 是        ｜
 | `-server-conf-path`   | 指定 server 端配置文件的路径                   | server      |   是        ｜
 |-----------------------|-----------------------------------------------|-------------|---------｜
+
+### server端的config文件
+把下面的配置以yaml格式保存在server的任意目录中，通过-server-conf-path参数指定即可
+    db_user: "your_db_user"
+    db_password: "your_db_password"
+    db_server: "your_db_server"
+    db_port: "your_db_port"
+    db_name: "your_db_name"
+
 ## 项目截图
 
 ![server](server.png)
@@ -90,10 +81,13 @@ graph LR
 ![监控展示](grafana.png)
 
 
+
 ## 运行方式
+ - 进入cmd目录，自行build三个组件即可
  - 支持虚拟机/k8s的部署方式，只要三端能互相访问即可
  - 建议将server端运行在k8s中，gateway连接server的svc地址
  - 如果需要将route运行在k8s中，请在yaml中开启hostnetwork
+ - 建议将gateway运行在拥有完全互联网权限的主机中，以二进制的形式部署
 
 
 ## 已在生产中稳定运行很久，如果您有任何问题，欢迎提Issues

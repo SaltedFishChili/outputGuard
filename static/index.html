@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>outputGuard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>outputGuard</h1>
+
+    <form id="ipForm">
+        <label for="ip">IP/域名:</label>
+        <input type="text" id="ip" name="ip" required>
+
+        <label for="action">动作:</label>
+        <select id="action" name="action" required>
+            <option value="add">Add</option>
+            <option value="del">Delete</option>
+        </select>
+
+        <label for="nonDeletable" title="选中,不会参与自动删除">是否不能删除:</label>
+        <input type="checkbox" id="nonDeletable" name="nonDeletable">
+
+        <button type="button" onclick="performAction()">Submit</button>
+    </form>
+    <div id="resultMessage"></div>
+    <h2>IP Table</h2>
+    <button type="button" onclick="showAllRecords()">查看所有ip</button>
+
+    <table id="ipTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>类型</th>
+                <th>名字</th>
+                <th>IP</th>
+                <th>是否不能删除</th>
+                <th>是否为内网ip</th>
+                <th>创建时间</th>
+            </tr>
+        </thead>
+        <tbody id="ipListBody">
+        </tbody>
+    </table>
+    <script>
+       document.addEventListener("DOMContentLoaded", function() {
+            showAllRecords();
+        });
+        function performAction() {
+            const ip = document.getElementById('ip').value;
+            const action = document.getElementById('action').value;
+            const nonDeletable = document.getElementById('nonDeletable').checked;
+
+            const apiUrl = `/api?${action}=${ip}&nonDeletable=${nonDeletable}`;
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const resultMessage = document.getElementById('resultMessage');
+                    const ipListBody = document.getElementById('ipListBody');
+
+                    if (data.status === 'success') {
+                        resultMessage.innerHTML = `<span style="color: green;">Success: ${data.info}</span>`;
+                        updateIpList(ipListBody);
+                    } else {
+                        resultMessage.innerHTML = `<span style="color: red;">Error: ${data.info}</span>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+
+                });
+        }
+        function showAllRecords() {
+            const ipListBody = document.getElementById('ipListBody');
+
+            const apiUrl = '/show-all';
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    ipListBody.innerHTML = '';
+
+                    data.Records.forEach(ipInfo => {
+                        const row = ipListBody.insertRow();
+                        row.insertCell(0).textContent = ipInfo.ID;
+                        row.insertCell(1).textContent = ipInfo.Types;
+                        row.insertCell(2).textContent = ipInfo.Name;
+                        row.insertCell(3).textContent = ipInfo.IP;
+                        row.insertCell(4).textContent = ipInfo.IsNoDel ? 'Yes' : 'No';
+                        row.insertCell(5).textContent = ipInfo.IsLocalNet ? 'Yes' : 'No';
+                        const createdAtDate = new Date(ipInfo.CreatedAt);
+                        row.insertCell(6).textContent = createdAtDate.toLocaleString();
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while fetching all records.');
+                });
+        }
+
+    </script>
+</body>
+</html>

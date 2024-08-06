@@ -14,19 +14,19 @@
 
 1. Server
 
-	•	Web Interface：提供一个网页界面，可以通过该界面添加或删除需要访问的域名和IP地址。
-	•	API Interface：提供API接口，可以通过API方式添加或删除域名和IP地址。
-	•	WSS Interface：提供WebSocket接口，允许Gateway注册并接受任务。
-	•	Domain Resolver：每分钟自动解析添加的域名，如果A记录有变化则自动更新iptables规则。
+	•	Web Interface：提供一个网页界面，可以通过该界面添加或删除需要访问的域名和IP地址。<br>
+	•	API Interface：提供API接口，可以通过API方式添加或删除域名和IP地址。<br>
+	•	WSS Interface：提供WebSocket接口，允许Gateway注册并接受任务。<br>
+	•	Domain Resolver：每分钟自动解析添加的域名，如果A记录有变化则自动更新iptables规则。<br>
 
 2. Gateway
 
-	•	IPTables Manager：运行在有完全互联网权限的机器上，接收Server发布的添加/删除任务并添加到iptables。
-	•	Prometheus Exporter：统计每个IP的收发流量，并将数据暴露给Prometheus进行监控。
+	•	IPTables Manager：运行在有完全互联网权限的机器上，接收Server发布的添加/删除任务并添加到iptables。<br>
+	•	Prometheus Exporter：统计每个IP的收发流量，并将数据暴露给Prometheus进行监控。<br>
 
 3. Route
 
-	•	Route Manager：运行在任意需要访问外网的机器或K8s Pod中，将所有非内网网段的路由指向Gateway。
+	•	Route Manager：运行在任意需要访问外网的机器或K8s Pod中，将所有非内网网段的路由指向Gateway。<br>
 
 ## 实现的功能
  - server

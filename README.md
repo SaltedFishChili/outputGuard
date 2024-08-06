@@ -57,30 +57,48 @@
 
 ## 参数说明
 
-| 参数名称              | 作用                                          | 适用范围    | 是否必须     ｜
-|-----------------------|-----------------------------------------------|-------------|---------｜
-| `-iptables-gateway`   | gateway 的 IP 地址，用以将公网 IP 路由至该地址 | route       |    是        ｜
-| `-iptables-wss-server`| server 端的地址，用以从 server 端接收添加/删除任务 | gateway     | 是        ｜
-| `-server-conf-path`   | 指定 server 端配置文件的路径                   | server      |   是        ｜
-|-----------------------|-----------------------------------------------|-------------|---------｜
+| 参数名称               | 作用                                           | 适用范围 | 是否必须 |
+|------------------------|------------------------------------------------|----------|----------|
+| `-iptables-gateway`    | gateway 的 IP 地址，用以将公网 IP 路由至该地址  | route    | 是       |
+| `-iptables-wss-server` | server 端的地址，用以从 server 端接收添加/删除任务 | gateway  | 是       |
+| `-server-conf-path`    | 指定 server 端配置文件的路径                    | server   | 是       |
 
 ### server端的config文件
 把下面的配置以yaml格式保存在server的任意目录中，通过-server-conf-path参数指定即可
-    db_user: "your_db_user"
-    db_password: "your_db_password"
-    db_server: "your_db_server"
-    db_port: "your_db_port"
-    db_name: "your_db_name"
+- db_user: "your_db_user"
+- db_password: "your_db_password"
+- db_server: "your_db_server"
+- db_port: "your_db_port"
+- db_name: "your_db_name"
 
 ## 项目截图
-
+### server端截图
 ![server](server.png)
 
+
+### exporter的指标
 ![exporter](exporter.png)
 
+
+### grafana展示
 ![监控展示](grafana.png)
 
 
+## metric说明
+| 名称                   | 作用                             |
+|------------------------|---------------------------------|
+| `iptables_bytes_count`    | 统计每个ip input/output的带宽  |
+| `iptables_packets_count` | 统计每个ip input/output的报文数 |
+
+### grafana中展示的语句（参考即可）
+#### ip OUTPUT报文数
+- sum by (ip) (increase(iptables_packets_count{type=~"OUTPUT",hostname=~"$host"}[2m]))
+#### ip INPUT报文数
+- sum by (ip) (increase(iptables_packets_count{type=~"INPUT",hostname=~"$host"}[2m]))
+#### ip 产生的OUTPUT流量
+sum by (ip) (increase(iptables_bytes_count{type=~"OUTPUT",hostname=~"$host"}[2m]))
+#### ip 产生的INPUT流量
+sum by (ip) (increase(iptables_bytes_count{type=~"INPUT",hostname=~"$host"}[2m]))
 
 ## 运行方式
  - 进入cmd目录，自行build三个组件即可

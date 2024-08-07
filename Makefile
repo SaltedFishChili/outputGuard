@@ -44,11 +44,6 @@ clean:
 	@rm -rf $(TARGET_DIR)
 	@echo "Clean up completed."
 
-server-container:
-	@echo "Building Docker image for server..."
-	@docker build -t saltedfishchili/outputguard/server $(SERVER_DOCKERFILE)
-	@if [ $$? -eq 0 ]; then echo "Docker image for server built successfully."; fi
-
 # 帮助信息
 help:
 	@echo "Usage: make [target] [GOOS=target_os GOARCH=target_arch]"

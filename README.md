@@ -81,7 +81,7 @@ make gateway
 or
 make router
 ```
-make默认build产物为linux amd6，如果你使用mac，make增加参数：GOOS=darwin
+make默认build产物为linux amd64，如果你使用mac，make增加参数：GOOS=darwin
 
 ## 参数说明
 

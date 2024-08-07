@@ -69,6 +69,7 @@
 ``` shell
 git clone https://github.com/SaltedFishChili/outputGuard.git
 cd outputGuard
+main入口：ls cmd/
 ```
 ### 构建二进制
 ```shell
@@ -80,7 +81,7 @@ make gateway
 or
 make router
 ```
-
+make默认build产物为linux amd6，如果你使用mac，make增加参数：GOOS=darwin
 
 ## 参数说明
 

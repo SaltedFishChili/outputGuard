@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: outputguard-router
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: outputguard-router
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: outputguard-router
+    spec:
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: main
+        env:
+          - name: TZ
+            value: "Asia/Shanghai"
+        image: saltedfishchili/outputguard:router
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        args: ["-iptables-gateway", "1.1.1.1"]

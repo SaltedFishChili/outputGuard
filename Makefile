@@ -3,6 +3,7 @@ SERVER_DIR=./cmd/server
 GATEWAY_DIR=./cmd/gateway
 ROUTER_DIR=./cmd/router
 TARGET_DIR=./cmd/target
+DOCKER_DIR=./docker
 SERVER_TARGET=$(TARGET_DIR)/server
 GATEWAY_TARGET=$(TARGET_DIR)/gateway
 ROUTER_TARGET=$(TARGET_DIR)/router
@@ -21,6 +22,7 @@ server:
 	@GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o $(SERVER_TARGET)/server $(SERVER_DIR)
 	@if [ $$? -eq 0 ]; then echo "Server build completed successfully. Output directory: $(SERVER_TARGET)"; fi
 	@cp -r static config $(SERVER_TARGET)
+
 
 # 构建 gateway
 gateway:
@@ -41,6 +43,11 @@ clean:
 	@echo "Cleaning up..."
 	@rm -rf $(TARGET_DIR)
 	@echo "Clean up completed."
+
+server-container:
+	@echo "Building Docker image for server..."
+	@docker build -t saltedfishchili/outputguard/server $(SERVER_DOCKERFILE)
+	@if [ $$? -eq 0 ]; then echo "Docker image for server built successfully."; fi
 
 # 帮助信息
 help:

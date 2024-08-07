@@ -73,7 +73,6 @@ func NewORM() *ORM {
 		Logger.Panic(fmt.Sprintf("加载server配置文件失败:%s", err.Error()))
 		return nil
 	}
-	Logger.Info(fmt.Sprintf("加载server配置文件成功: %v", config))
 	rootDSN := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", config.DbUser, config.DbPassword, config.DbServer, config.DbPort, config.DbName)
 	// 创建 Gorm 的 DB 对象
 	rootDB, err := gorm.Open(mysql.New(mysql.Config{
@@ -82,14 +81,14 @@ func NewORM() *ORM {
 		Logger: logger.Default.LogMode(logger.Error),
 	})
 	if err != nil {
-		Logger.Error(fmt.Sprintf("创建数据库失败:%s", err.Error()))
+		Logger.Panic(fmt.Sprintf("创建数据库失败:%s", err.Error()))
 		return nil
 	}
 
 	// 设置连接池参数
 	sqlDB, err := rootDB.DB()
 	if err != nil {
-		Logger.Error(fmt.Sprintf("设置数据库连接池参数失败:%s", err.Error()))
+		Logger.Panic(fmt.Sprintf("设置数据库连接池参数失败:%s", err.Error()))
 		return nil
 	}
 
@@ -101,7 +100,7 @@ func NewORM() *ORM {
 	migrator := rootDB.Migrator()
 	if !migrator.HasTable(&CrawlerProxy{}) {
 		if err := rootDB.AutoMigrate(&CrawlerProxy{}); err != nil {
-			Logger.Panic(err.Error())
+			Logger.Panic(fmt.Sprintf("数据库migrator失败:%s", err.Error()))
 			return nil
 		}
 	}

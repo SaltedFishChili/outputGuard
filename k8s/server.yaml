@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: outputguard-server
+  labels:
+    app.kubernetes.io/name: outputguard-server
+
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: outputguard-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: outputguard-server
+    spec:
+      containers:
+        - name: main
+          image: saltedfishchili/outputguard:server
+          imagePullPolicy: IfNotPresent
+          startupProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 2
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 2
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+          args: ["-server-conf-path", "/apps/server/config/server.yaml"]
+          volumeMounts:
+            - name: server-config
+              mountPath: /apps/server/config/server.yaml
+              subPath: server.yaml
+      volumes:
+      - name: server-config
+        configMap:
+          name: outputguard-server
+          items:
+          - key: server.yaml
+            path: server.yaml
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: outputguard-server
+  labels:
+    app.kubernetes.io/name: outputguard-server
+data:
+  server.yaml: |
+    db_user: "your_db_user"
+    db_password: "your_db_password"
+    db_server: "your_db_server"
+    db_port: "your_db_port"
+    db_name: "your_db_name"
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: outputguard-server
+  labels:
+    app.kubernetes.io/name: outputguard-server
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: outputguard-server
+  ports:
+    - name: http-server
+      protocol: TCP
+      port: 80
+      targetPort: 8080

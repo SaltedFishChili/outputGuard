@@ -72,16 +72,30 @@ cd outputGuard
 main入口：ls cmd/
 ```
 ### 构建二进制
+make默认build产物为linux amd64，如果你使用mac，使用make GOOS=darwin
 ```shell
-make
+make && cd cmd/target/ && ls
 or
 make server
 or
 make gateway
 or
 make router
+
 ```
-make默认build产物为linux amd64，如果你使用mac，make增加参数：GOOS=darwin
+### docker镜像
+server:
+``` shell
+docker pull saltedfishchili/outputguard:server
+docker run  -it -v $server_config_file:/apps/server/config/config.yaml saltedfishchili/outputguard:server   -server-conf-path  /apps/server/config/config.yaml
+```
+router
+``` shell
+docker pull saltedfishchili/outputguard:router
+docker run -it saltedfishchili/outputguard:router -iptables-gateway  $gateway_addr
+```
+### 在k8s目录有server/router的yaml例子，可参考
+### 在docker目录中，有server/router的Dockerfile，可参考
 
 ## 参数说明
 

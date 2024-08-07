@@ -144,9 +144,9 @@ docker run -it saltedfishchili/outputguard:router -iptables-gateway  $gateway_ad
 
 
 ## 建议
-- route客户端需要与gateway运行在同一个子网内，否则无法添加路由
+- **route客户端需要与gateway运行在同一个子网内，否则无法添加路由**
 - sever端运行在k8s中，gateway访问server的svc即可
-- gateway运行在具有完全出网权限的机器中，一般不建议该出网权限在k8s集群中
+- gateway运行在具有完全出网权限的机器中，一般**不建议该机器运行在在k8s集群中**
 - router可以运行在任意环境中，如果需要运行在k8s中，建议使用DaemonSet且hostNetwork设置为true
 
 ## 已稳定运行很久，如果您有任何问题，欢迎提Issues

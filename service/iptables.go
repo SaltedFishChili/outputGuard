@@ -28,9 +28,8 @@ type IptableRules struct {
 	Ipt       *iptables.IPTables
 	ChainName string
 	Table     string
-	// Ip        string
-	Packets int
-	Bytes   int
+	Packets   int
+	Bytes     int
 }
 
 func (ir IptableRules) AddMasqueradeRule(ip string) error {

@@ -22,14 +22,6 @@ type HttpServer struct {
 	Ss        *ServerService
 }
 
-type LdapConfig struct {
-	Host     string
-	Port     int
-	BaseDN   string
-	UserDN   string
-	Password string
-}
-
 func (hs *HttpServer) handleWebSocket(ctx *gin.Context) {
 	hostname := ctx.Query("hostname")
 	upgrader := websocket.Upgrader{

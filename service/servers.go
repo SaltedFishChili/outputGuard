@@ -125,12 +125,12 @@ func (ss *ServerService) getIPv4AddressesForDomain(domain string) ([]string, err
 }
 
 /*
- * 每十分钟解析已添加的域名
+ * 每五分钟解析已添加的域名
  * 如果存在新的A记录则自动添加白名单
  */
 func (ss *ServerService) LookupDomainIP(wssServer *WssServer) {
 	for {
-		time.Sleep(1 * time.Minute)
+		time.Sleep(5 * time.Minute)
 		domian, err := wssServer.Orms.QueryUniqueDomainNames()
 		Logger.Info(fmt.Sprintf("查询到的域名为:%s", domian))
 		if err != nil {

@@ -17,7 +17,7 @@
 	•	Web Interface：提供一个网页界面，可以通过该界面添加或删除需要访问的域名和IP地址。<br>
 	•	API Interface：提供API接口，可以通过API方式添加或删除域名和IP地址。<br>
 	•	WSS Interface：提供WebSocket接口，允许Gateway注册并接受任务。<br>
-	•	Domain Resolver：每分钟自动解析添加的域名，如果A记录有变化则自动更新iptables规则。<br>
+	•	Domain Resolver：每5分钟自动解析添加的域名，如果A记录有变化则自动更新iptables规则。<br>
 	•	监听8080端口 <br>
 
 2. Gateway
@@ -33,7 +33,7 @@
 ## 实现的功能
  - server
    - 提供API/页面添加/删除 域名/ip
-   - 每分钟自动解析添加的域名，如出现新的A记录自动发布给gateway
+   - 每5分钟自动解析添加的域名，如出现新的A记录自动发布给gateway
    - 如果添加时指定了不可删除，则后不能删除
    - 拒绝内网ip的添加
    - server端可以随意故障
